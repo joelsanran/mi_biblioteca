@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "544739576393",
+    "project_id": "mi-biblioteca-3bb52",
+    "storage_bucket": "mi-biblioteca-3bb52.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:544739576393:android:0c64c87953de41b992cd98",
+        "android_client_info": {
+          "package_name": "com.enri.mi_biblioteca"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhJ7PDOX-5fuenaZsfT68csXM99gUpC3M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
