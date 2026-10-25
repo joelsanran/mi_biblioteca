@@ -1,7 +1,9 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/validators.dart';
 import '../user/user_main_screen.dart';
 import '../admin/admin_main_screen.dart';
 
@@ -122,6 +124,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 obscureText: _obscurePassword,
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
+                  helperText: 'Mínimo 8 caracteres, con letras y números',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -133,17 +136,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
-                validator: (v) {
-                  if (v == null || v.isEmpty) {
-                    return 'Ingresa una contraseña';
-                  }
-
-                  if (v.length < 6) {
-                    return 'Mínimo 6 caracteres';
-                  }
-
-                  return null;
-                },
+                validator: Validators.password,
               ),
 
               const SizedBox(height: 14),

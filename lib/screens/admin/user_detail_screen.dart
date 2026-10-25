@@ -4,7 +4,11 @@ import '../../models/book.dart';
 import '../../theme/app_theme.dart';
 
 class UserDetailScreen extends StatelessWidget {
-  const UserDetailScreen({super.key, required this.userId, required this.userName});
+  const UserDetailScreen({
+    super.key,
+    required this.userId,
+    required this.userName,
+  });
 
   final String userId;
   final String userName;
@@ -24,12 +28,16 @@ class UserDetailScreen extends StatelessWidget {
           }
           final books = snapshot.data ?? [];
           if (books.isEmpty) {
-            return const Center(child: Text('Este usuario no tiene libros registrados'));
+            return const Center(
+              child: Text('Este usuario no tiene libros registrados'),
+            );
           }
 
           final leidos = books.where((b) => b.status == 'leido').toList();
           final leyendo = books.where((b) => b.status == 'leyendo').toList();
-          final pendientes = books.where((b) => b.status == 'pendiente').toList();
+          final pendientes = books
+              .where((b) => b.status == 'pendiente')
+              .toList();
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -45,7 +53,11 @@ class UserDetailScreen extends StatelessWidget {
                 const SizedBox(height: 20),
               ],
               if (pendientes.isNotEmpty) ...[
-                _sectionTitle('Pendientes', pendientes.length, AppColors.pending),
+                _sectionTitle(
+                  'Pendientes',
+                  pendientes.length,
+                  AppColors.pending,
+                ),
                 ...pendientes.map(_bookTile),
               ],
             ],
@@ -60,9 +72,16 @@ class UserDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 8),
-          Text('$label ($count)', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(
+            '$label ($count)',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
         ],
       ),
     );
@@ -76,7 +95,11 @@ class UserDetailScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Row(
@@ -84,19 +107,43 @@ class UserDetailScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(6),
             child: book.coverUrl.isNotEmpty
-                ? Image.network(book.coverUrl, width: 36, height: 50, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.book))
-                : Container(width: 36, height: 50, color: AppColors.background,
-                    child: const Icon(Icons.book, size: 16, color: AppColors.textLight)),
+                ? Image.network(
+                    book.coverUrl,
+                    width: 36,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.book),
+                  )
+                : Container(
+                    width: 36,
+                    height: 50,
+                    color: AppColors.background,
+                    child: const Icon(
+                      Icons.book,
+                      size: 16,
+                      color: AppColors.textLight,
+                    ),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(book.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                Text('${book.author} · ${book.year ?? "s/f"}',
-                    style: const TextStyle(color: AppColors.textLight, fontSize: 11.5)),
+                Text(
+                  book.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+                ),
+                Text(
+                  '${book.author} · ${book.year ?? "s/f"}',
+                  style: const TextStyle(
+                    color: AppColors.textLight,
+                    fontSize: 11.5,
+                  ),
+                ),
               ],
             ),
           ),

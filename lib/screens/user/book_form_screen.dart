@@ -1,7 +1,9 @@
+
 import 'package:flutter/material.dart';
 import '../../models/book.dart';
 import '../../services/firestore_service.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/validators.dart';
 
 class BookFormScreen extends StatefulWidget {
   const BookFormScreen({super.key, required this.userId, this.book});
@@ -100,9 +102,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
             TextFormField(
               controller: _authorCtrl,
               decoration: const InputDecoration(labelText: 'Autor'),
-              validator: (v) => (v == null || v.trim().isEmpty)
-                  ? 'El autor es obligatorio'
-                  : null,
+              validator: Validators.author,
             ),
             const SizedBox(height: 12),
             TextFormField(

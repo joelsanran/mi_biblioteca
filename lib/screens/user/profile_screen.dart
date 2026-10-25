@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/validators.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
@@ -89,7 +90,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           controller: ctrl,
           obscureText: true,
           decoration: const InputDecoration(
-            labelText: 'Nueva contraseña (mín. 6 caracteres)',
+            labelText: 'Nueva contraseña (mín. 8, con letras y números)',
           ),
         ),
         actions: [
@@ -105,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
 
-    if (newPassword != null && newPassword.length >= 6 && mounted) {
+    if (newPassword != null && Validators.password(newPassword) == null && mounted) {
       try {
         await _authService.updatePassword(newPassword);
         if (mounted) {
@@ -129,8 +130,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     } else if (newPassword != null && newPassword.isNotEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('La contraseña debe tener al menos 6 caracteres'),
+          SnackBar(
+            content: Text(Validators.password(newPassword) ?? 'Contraseña no válida'),
           ),
         );
       }
