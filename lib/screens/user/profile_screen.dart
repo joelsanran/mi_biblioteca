@@ -5,10 +5,16 @@ import '../../screens/auth/login_screen.dart';
 import '../../theme/app_theme.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key, required this.name, required this.email});
+  const ProfileScreen({
+    super.key,
+    required this.name,
+    required this.email,
+    required this.onNameChanged,
+  });
 
   final String name;
   final String email;
+  final ValueChanged<String> onNameChanged;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -16,13 +22,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
-  late String _name;
-
-  @override
-  void initState() {
-    super.initState();
-    _name = widget.name;
-  }
 
   bool get _isGoogleAccount {
     final user = FirebaseAuth.instance.currentUser;
@@ -30,14 +29,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   String get _initials {
-    final parts = _name.trim().split(' ');
+    final parts = widget.name.trim().split(' ');
     if (parts.isEmpty || parts.first.isEmpty) return '?';
     if (parts.length == 1) return parts.first[0].toUpperCase();
     return (parts.first[0] + parts.last[0]).toUpperCase();
   }
 
   Future<void> _changeName() async {
-    final ctrl = TextEditingController(text: _name);
+    final ctrl = TextEditingController(text: widget.name);
     final newName = await showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
@@ -48,7 +47,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: const InputDecoration(labelText: 'Nuevo nombre'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, ctrl.text.trim()),
             child: const Text('Guardar'),
@@ -60,15 +62,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (newName != null && newName.isNotEmpty && mounted) {
       try {
         await _authService.updateDisplayName(newName);
-        setState(() => _name = newName);
+        widget.onNameChanged(newName);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Nombre actualizado')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Nombre actualizado')));
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Error: $e')));
         }
       }
     }
@@ -84,10 +88,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: TextField(
           controller: ctrl,
           obscureText: true,
-          decoration: const InputDecoration(labelText: 'Nueva contraseña (mín. 6 caracteres)'),
+          decoration: const InputDecoration(
+            labelText: 'Nueva contraseña (mín. 6 caracteres)',
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, ctrl.text.trim()),
             child: const Text('Guardar'),
@@ -106,16 +115,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
         }
       } on FirebaseAuthException catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              content: Text(e.code == 'requires-recent-login'
-                  ? 'Por seguridad, cierra sesión y vuelve a entrar antes de cambiar tu contraseña'
-                  : 'Error: ${e.message}')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                e.code == 'requires-recent-login'
+                    ? 'Por seguridad, cierra sesión y vuelve a entrar antes de cambiar tu contraseña'
+                    : 'Error: ${e.message}',
+              ),
+            ),
+          );
         }
       }
     } else if (newPassword != null && newPassword.isNotEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
+          const SnackBar(
+            content: Text('La contraseña debe tener al menos 6 caracteres'),
+          ),
         );
       }
     }
@@ -129,10 +145,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         title: const Text('Cerrar sesión'),
         content: const Text('¿Seguro que quieres salir de tu cuenta?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
+            child: const Text(
+              'Cerrar sesión',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ],
       ),
@@ -211,7 +233,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.4),
+                width: 3,
+              ),
             ),
             child: Center(
               child: Text(
@@ -226,7 +251,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 14),
           Text(
-            _name,
+            widget.name,
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -273,16 +298,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
-                Icon(icon, color: isDestructive ? Colors.red : AppColors.primary, size: 22),
+                Icon(
+                  icon,
+                  color: isDestructive ? Colors.red : AppColors.primary,
+                  size: 22,
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     label,
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: color),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: color,
+                    ),
                   ),
                 ),
                 if (!isDestructive)
-                  const Icon(Icons.chevron_right, color: AppColors.textLight, size: 20),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textLight,
+                    size: 20,
+                  ),
               ],
             ),
           ),

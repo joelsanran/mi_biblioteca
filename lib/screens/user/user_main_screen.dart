@@ -23,14 +23,25 @@ class UserMainScreen extends StatefulWidget {
 
 class _UserMainScreenState extends State<UserMainScreen> {
   int _currentIndex = 0;
+  late String _userName;
+
+  @override
+  void initState() {
+    super.initState();
+    _userName = widget.userName;
+  }
 
   @override
   Widget build(BuildContext context) {
     final screens = [
-      HomeScreen(userName: widget.userName, userId: widget.userId),
+      HomeScreen(userName: _userName, userId: widget.userId),
       SearchScreen(userId: widget.userId),
       LibraryScreen(userId: widget.userId),
-      ProfileScreen(name: widget.userName, email: widget.userEmail),
+      ProfileScreen(
+        name: _userName,
+        email: widget.userEmail,
+        onNameChanged: (newName) => setState(() => _userName = newName),
+      ),
     ];
 
     return Scaffold(
