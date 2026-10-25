@@ -1,7 +1,9 @@
+
 import 'package:flutter/material.dart';
 import '../../services/firestore_service.dart';
 import '../../models/book.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/book_cover.dart';
 
 class BooksManagementScreen extends StatelessWidget {
   const BooksManagementScreen({super.key});
@@ -45,18 +47,12 @@ class BooksManagementScreen extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: book.coverUrl.isNotEmpty
-                          ? Image.network(book.coverUrl, width: 44, height: 62, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Container(
-                                    width: 44, height: 62, color: AppColors.background,
-                                    child: const Icon(Icons.book, color: AppColors.textLight, size: 18),
-                                  ))
-                          : Container(
-                              width: 44, height: 62, color: AppColors.background,
-                              child: const Icon(Icons.book, color: AppColors.textLight, size: 18),
-                            ),
+                    BookCover(
+                      coverBase64: book.coverBase64,
+                      coverUrl: book.coverUrl,
+                      width: 44,
+                      height: 62,
+                      radius: 8,
                     ),
                     const SizedBox(width: 12),
                     Expanded(

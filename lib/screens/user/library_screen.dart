@@ -3,6 +3,7 @@ import '../../services/firestore_service.dart';
 import '../../models/book.dart';
 import '../../theme/app_theme.dart';
 import 'book_form_screen.dart';
+import '../../widgets/book_cover.dart';
 
 class LibraryScreen extends StatefulWidget {
   const LibraryScreen({super.key, required this.userId});
@@ -194,18 +195,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: book.coverUrl.isNotEmpty
-                      ? Image.network(
-                          book.coverUrl,
-                          width: 56,
-                          height: 78,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _coverPlaceholder(),
-                        )
-                      : _coverPlaceholder(),
-                ),
+                BookCover(coverBase64: book.coverBase64, coverUrl: book.coverUrl),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
@@ -225,20 +215,41 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         style: const TextStyle(color: AppColors.textLight, fontSize: 12.5),
                       ),
                       const SizedBox(height: 10),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          statusLabel,
-                          style: TextStyle(
-                            color: statusColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              statusLabel,
+                              style: TextStyle(
+                                color: statusColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
-                        ),
+                          if (book.status == 'leido' && book.rating != null)
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star, size: 15, color: AppColors.secondary),
+                                const SizedBox(width: 2),
+                                Text('${book.rating}/5',
+                                    style: const TextStyle(
+                                        fontSize: 12, fontWeight: FontWeight.w600)),
+                              ],
+                            ),
+                          if (book.status == 'leyendo' && book.currentPage != null)
+                            Text('Pág. ${book.currentPage}',
+                                style: const TextStyle(fontSize: 12, color: AppColors.textLight)),
+                        ],
                       ),
                     ],
                   ),
@@ -252,15 +263,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _coverPlaceholder() {
-    return Container(
-      width: 56,
-      height: 78,
-      color: AppColors.background,
-      child: const Icon(Icons.menu_book, color: AppColors.textLight, size: 24),
     );
   }
 

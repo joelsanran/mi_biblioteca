@@ -1,7 +1,9 @@
+
 import 'package:flutter/material.dart';
 import '../../services/firestore_service.dart';
 import '../../models/book.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/book_cover.dart';
 
 class UserDetailScreen extends StatelessWidget {
   const UserDetailScreen({
@@ -104,26 +106,12 @@ class UserDetailScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(6),
-            child: book.coverUrl.isNotEmpty
-                ? Image.network(
-                    book.coverUrl,
-                    width: 36,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.book),
-                  )
-                : Container(
-                    width: 36,
-                    height: 50,
-                    color: AppColors.background,
-                    child: const Icon(
-                      Icons.book,
-                      size: 16,
-                      color: AppColors.textLight,
-                    ),
-                  ),
+          BookCover(
+            coverBase64: book.coverBase64,
+            coverUrl: book.coverUrl,
+            width: 36,
+            height: 50,
+            radius: 6,
           ),
           const SizedBox(width: 12),
           Expanded(
