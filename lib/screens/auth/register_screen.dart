@@ -1,11 +1,11 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../services/auth_service.dart';
-import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
-import '../user/user_main_screen.dart';
+import '../../widgets/password_requirements.dart';
 import '../admin/admin_main_screen.dart';
+import '../user/user_main_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -35,16 +35,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _loading = true);
 
     try {
       final user = await _authService.registerWithEmail(
         name: _nameCtrl.text.trim(),
         email: _emailCtrl.text.trim(),
-        password: _passwordCtrl.text.trim(),
+        password: _passwordCtrl.text,
       );
 
       if (user != null && mounted) {
@@ -62,12 +68,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
     } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_authService.getAuthErrorMessage(e)),
-          backgroundColor: Colors.red,
-        ),
-      );
+      _showError(_authService.getAuthErrorMessage(e));
+    } catch (e) {
+      _showError('Ocurrió un error inesperado');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -86,79 +89,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
             children: [
               TextFormField(
                 controller: _nameCtrl,
+                textCapitalization: TextCapitalization.words,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: const InputDecoration(
                   labelText: 'Nombre completo',
                   prefixIcon: Icon(Icons.person_outline),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Ingresa tu nombre'
-                    : null,
+                validator: Validators.personName,
               ),
-
               const SizedBox(height: 14),
-
               TextFormField(
                 controller: _emailCtrl,
                 keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 decoration: const InputDecoration(
                   labelText: 'Correo electrónico',
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) {
-                    return 'Ingresa tu correo';
-                  }
-
-                  if (!v.contains('@')) {
-                    return 'Correo inválido';
-                  }
-
-                  return null;
-                },
+                validator: Validators.email,
               ),
-
               const SizedBox(height: 14),
-
               TextFormField(
                 controller: _passwordCtrl,
                 obscureText: _obscurePassword,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                ],
                 decoration: InputDecoration(
                   labelText: 'Contraseña',
-                  helperText: 'Mínimo 8 caracteres, con letras y números',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                    ),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_off
+                        : Icons.visibility),
                     onPressed: () =>
                         setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
                 validator: Validators.password,
               ),
-
+              const SizedBox(height: 10),
+              PasswordRequirements(controller: _passwordCtrl),
               const SizedBox(height: 14),
-
               TextFormField(
                 controller: _confirmCtrl,
                 obscureText: _obscurePassword,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Confirmar contraseña',
                   prefixIcon: Icon(Icons.lock_outline),
                 ),
-                validator: (v) {
-                  if (v != _passwordCtrl.text) {
-                    return 'Las contraseñas no coinciden';
-                  }
-
-                  return null;
-                },
+                validator: (v) =>
+                    v != _passwordCtrl.text ? 'Las contraseñas no coinciden' : null,
               ),
-
               const SizedBox(height: 24),
-
               _loading
                   ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(

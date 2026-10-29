@@ -4,6 +4,8 @@ import '../../services/auth_service.dart';
 import '../../screens/auth/login_screen.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
+import 'package:flutter/services.dart';
+import '../../widgets/password_requirements.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
@@ -40,41 +42,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final ctrl = TextEditingController(text: widget.name);
     final newName = await showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Cambiar nombre'),
-        content: TextField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Nuevo nombre'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-            child: const Text('Guardar'),
-          ),
-        ],
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final error = Validators.personName(ctrl.text);
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Cambiar nombre'),
+            content: TextField(
+              controller: ctrl,
+              textCapitalization: TextCapitalization.words,
+              onChanged: (_) => setDialogState(() {}),
+              decoration: InputDecoration(
+                labelText: 'Nuevo nombre',
+                errorText: ctrl.text.isEmpty ? null : error,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: error == null
+                    ? () => Navigator.pop(context, ctrl.text.trim())
+                    : null,
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
       ),
     );
 
-    if (newName != null && newName.isNotEmpty && mounted) {
-      try {
-        await _authService.updateDisplayName(newName);
-        widget.onNameChanged(newName);
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Nombre actualizado')));
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: $e')));
-        }
+    if (newName == null || newName.isEmpty || !mounted) return;
+
+    try {
+      await _authService.updateDisplayName(newName);
+      widget.onNameChanged(newName);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Nombre actualizado')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -83,57 +96,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final ctrl = TextEditingController();
     final newPassword = await showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Cambiar contraseña'),
-        content: TextField(
-          controller: ctrl,
-          obscureText: true,
-          decoration: const InputDecoration(
-            labelText: 'Nueva contraseña (mín. 8, con letras y números)',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-            child: const Text('Guardar'),
-          ),
-        ],
+      builder: (_) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          final isValid = Validators.password(ctrl.text) == null;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text('Cambiar contraseña'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: ctrl,
+                    obscureText: true,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    ],
+                    onChanged: (_) => setDialogState(() {}),
+                    decoration:
+                        const InputDecoration(labelText: 'Nueva contraseña'),
+                  ),
+                  const SizedBox(height: 12),
+                  PasswordRequirements(controller: ctrl),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: isValid ? () => Navigator.pop(context, ctrl.text) : null,
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
       ),
     );
 
-    if (newPassword != null && Validators.password(newPassword) == null && mounted) {
-      try {
-        await _authService.updatePassword(newPassword);
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Contraseña actualizada')),
-          );
-        }
-      } on FirebaseAuthException catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                e.code == 'requires-recent-login'
-                    ? 'Por seguridad, cierra sesión y vuelve a entrar antes de cambiar tu contraseña'
-                    : 'Error: ${e.message}',
-              ),
-            ),
-          );
-        }
-      }
-    } else if (newPassword != null && newPassword.isNotEmpty) {
+    if (newPassword == null || !mounted) return;
+
+    try {
+      await _authService.updatePassword(newPassword);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(Validators.password(newPassword) ?? 'Contraseña no válida'),
-          ),
+          const SnackBar(content: Text('Contraseña actualizada')),
         );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.code == 'requires-recent-login'
+              ? 'Por seguridad, cierra sesión y vuelve a entrar antes de cambiar tu contraseña'
+              : 'Error: ${e.message}'),
+        ));
       }
     }
   }
