@@ -6,6 +6,7 @@ import '../../services/firestore_service.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/validators.dart';
 import '../../widgets/book_cover.dart';
+import 'package:flutter/services.dart';
 
 class BookFormScreen extends StatefulWidget {
   const BookFormScreen({super.key, required this.userId, this.book});
@@ -195,9 +196,16 @@ class _BookFormScreenState extends State<BookFormScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _yearCtrl,
-              decoration:
-                  const InputDecoration(labelText: 'Año de publicación'),
+              decoration: const InputDecoration(
+                labelText: 'Año de publicación (4 dígitos)',
+                hintText: 'Ej. 1999',
+              ),
               keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(4),
+              ],
+              validator: Validators.year,
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -225,16 +233,15 @@ class _BookFormScreenState extends State<BookFormScreen> {
               TextFormField(
                 controller: _pageCtrl,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(4),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Página en la que te quedaste',
                   prefixIcon: Icon(Icons.bookmark_outline),
                 ),
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return null;
-                  final n = int.tryParse(v.trim());
-                  if (n == null || n < 0) return 'Ingresa un número válido';
-                  return null;
-                },
+                validator: Validators.page,
               ),
             ],
 
